@@ -27,7 +27,7 @@ android.minapi = 21
 
 # android.ndk = 28c
 
-android.archs = arm64-v8a,armeabi-v7a
+android.archs = arm64-v8a
 
 android.python_version = 3.12
 
