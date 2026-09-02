@@ -19,17 +19,18 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-          cache: "pip"
 
       - name: Restore camera assets
         shell: bash
         run: |
           set -e
           mkdir -p assets
+
           for n in 1 2 3 4 5; do
             test -f "Camera_${n}.zip"
             unzip -q "Camera_${n}.zip" -d assets
           done
+
           echo "Camera assets restored:"
           find assets -maxdepth 2 -type f -print
 
@@ -37,7 +38,9 @@ jobs:
         shell: bash
         run: |
           set -e
+
           sudo apt-get update
+
           sudo apt-get install -y \
             git \
             zip \
@@ -70,15 +73,28 @@ jobs:
       - name: Install Buildozer
         shell: bash
         run: |
+          set -e
+
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install "buildozer" "cython<3.4"
 
       - name: Build APK
         shell: bash
         run: |
-          set -e
           set -o pipefail
+
           yes | buildozer -v android debug 2>&1 | tee build.log
+
+      - name: Check APK
+        if: success()
+        shell: bash
+        run: |
+          set -e
+
+          echo "APK files:"
+          find bin -maxdepth 1 -type f -name "*.apk" -print
+
+          test -n "$(find bin -maxdepth 1 -type f -name "*.apk" -print -quit)"
 
       - name: Upload APK
         if: success()
@@ -94,4 +110,4 @@ jobs:
         with:
           name: FC27-build-log
           path: build.log
-          if-no-files-found: warn
+          if-no-files-found: ignore
