@@ -50,9 +50,10 @@ jobs:
             python3-virtualenv \
             autoconf \
             automake \
+            libtool \
+            libtool-bin \
             autopoint \
             gettext \
-            libtool \
             pkg-config \
             zlib1g-dev \
             libncurses5-dev \
@@ -61,6 +62,10 @@ jobs:
             cmake \
             libffi-dev \
             libssl-dev
+
+          libtoolize --version
+          autoconf --version
+          automake --version
 
       - name: Check Java and Python
         shell: bash
@@ -73,28 +78,16 @@ jobs:
       - name: Install Buildozer
         shell: bash
         run: |
-          set -e
-
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install "buildozer" "cython<3.4"
 
       - name: Build APK
         shell: bash
         run: |
+          set -e
           set -o pipefail
 
           yes | buildozer -v android debug 2>&1 | tee build.log
-
-      - name: Check APK
-        if: success()
-        shell: bash
-        run: |
-          set -e
-
-          echo "APK files:"
-          find bin -maxdepth 1 -type f -name "*.apk" -print
-
-          test -n "$(find bin -maxdepth 1 -type f -name "*.apk" -print -quit)"
 
       - name: Upload APK
         if: success()
@@ -110,4 +103,4 @@ jobs:
         with:
           name: FC27-build-log
           path: build.log
-          if-no-files-found: ignore
+          if-no-files-found: warn
