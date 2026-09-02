@@ -22,7 +22,7 @@ source.include_patterns = assets/*,assets/**/*
 version = 1.1.0
 
 # (list) Application requirements
-requirements = python3,kivy,requests,pyjnius
+requirements = python3,kivy==2.3.0,requests,pyjnius
 
 # (str) Supported orientation (one of landscape, sensorLandscape, portrait or all)
 orientation = portrait
