@@ -1,106 +1,57 @@
-name: Build FC27 APK
+name: Build APK
 
 on:
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   build:
-    name: Build Android APK
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
-      - name: Restore camera assets
-        shell: bash
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install dependencies
         run: |
-          set -e
-          mkdir -p assets
+          sudo apt update
+          sudo apt install -y \
+            git zip unzip \
+            autoconf libtool pkg-config \
+            zlib1g-dev libncurses5-dev libncursesw5-dev \
+            cmake libffi-dev libssl-dev
 
-          for n in 1 2 3 4 5; do
-            test -f "Camera_${n}.zip"
-            unzip -q "Camera_${n}.zip" -d assets
-          done
-
-          echo "Camera assets restored:"
-          find assets -maxdepth 2 -type f -print
-
-      - name: Install system dependencies
-        shell: bash
-        run: |
-          set -e
-
-          sudo apt-get update
-
-          sudo apt-get install -y \
-            git \
-            zip \
-            unzip \
-            openjdk-17-jdk \
-            python3-pip \
-            python3-virtualenv \
-            autoconf \
-            automake \
-            libtool \
-            libtool-bin \
-            autopoint \
-            gettext \
-            pkg-config \
-            zlib1g-dev \
-            libncurses5-dev \
-            libncursesw5-dev \
-            libtinfo6 \
-            cmake \
-            libffi-dev \
-            libssl-dev
-
-          libtoolize --version
-          autoconf --version
-          automake --version
-
-      - name: Check Java and Python
-        shell: bash
-        run: |
-          java -version
-          javac -version
-          python --version
-          pip --version
-
-      - name: Install Buildozer
-        shell: bash
+      - name: Upgrade Python tools
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install "buildozer" "cython<3.4"
+
+      - name: Install Buildozer tools
+        run: |
+          pip install buildozer==1.5.0
+          pip install python-for-android==2024.01.21
+          pip install cython==0.29.36
+
+      - name: Clean Buildozer cache
+        run: |
+          rm -rf .buildozer
+          rm -rf ~/.buildozer
 
       - name: Build APK
-        shell: bash
         run: |
-          set -e
-          set -o pipefail
-
-          yes | buildozer -v android debug 2>&1 | tee build.log
+          buildozer -v android debug
 
       - name: Upload APK
-        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: FC27-APK
+          name: apk-release
           path: bin/*.apk
-          if-no-files-found: error
-
-      - name: Upload build log if build fails
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: FC27-build-log
-          path: build.log
-          if-no-files-found: warn
