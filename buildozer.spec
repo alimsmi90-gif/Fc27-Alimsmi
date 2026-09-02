@@ -29,6 +29,8 @@ android.minapi = 21
 
 android.archs = arm64-v8a,armeabi-v7a
 
+android.python_version = 3.12
+
 android.accept_sdk_license = True
 
 
