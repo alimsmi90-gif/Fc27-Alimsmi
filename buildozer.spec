@@ -25,7 +25,7 @@ android.api = 35
 
 android.minapi = 21
 
-android.ndk = 28c
+# android.ndk = 28c
 
 android.archs = arm64-v8a,armeabi-v7a
 
